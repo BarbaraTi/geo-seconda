@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mappa Interattiva dell'Unione Europea</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(45deg, #1e3c72, #2a5298);
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+            padding: 30px;
+            min-height: 800px;
+        }
+        
+        .map-section {
+            position: relative;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        .timeline {
+            position: relative;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(90deg, #ffd89b 0%, #19547b 100%);
+            border-radius: 10px;
+            color: white;
+        }
+        
+        .timeline h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .timeline-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .timeline-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .timeline-item:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .eu-map {
+            width: 100%;
+            height: 500px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .map-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        
+        .map-stats {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .info-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid #667eea;
+            transition: all 0.3s ease;
+        }
+        
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+        
+        .info-card h3 {
+            color: #1e3c72;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .icon {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .info-list {
+            list-style: none;
+        }
+        
+        .info-list li {
+            background: #f8f9fa;
+            margin: 8px 0;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+            transition: all 0.3s ease;
+        }
+        
+        .info-list li:hover {
+            background: #e3f2fd;
+            transform: translateX(5px);
+        }
+        
+        .institutions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .institution-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .institution-card:hover {
+            background: #e3f2fd;
+            border-color: #667eea;
+            transform: scale(1.02);
+        }
+        
+        .institution-card h4 {
+            color: #1e3c72;
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+        
+        .institution-card p {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .action-areas {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .action-item {
+            background: linear-gradient(45deg, #a8edea, #fed6e3);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+        
+        .action-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .interactive-button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .interactive-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .interactive-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        .interactive-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .quiz-section {
+            background: linear-gradient(45deg, #ff9a9e, #fecfef);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+        
+        .quiz-question {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+        
+        .quiz-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .quiz-option {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .quiz-option:hover {
+            background: #e3f2fd;
+        }
+        
+        .quiz-option.correct {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .quiz-option.incorrect {
+            background: #ffcdd2;
+            color: #c62828;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .institutions-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-areas {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🇪🇺 L'Unione Europea</h1>
+            <p>Mappa interattiva educativa - Strumento didattico</p>
+        </div>
+        
+        <div class="content">
+            <div class="map-section">
+                <div class="timeline">
+                    <h3>🕐 Le Tappe Storiche</h3>
+                    <div class="timeline-items">
+                        <div class="timeline-item" onclick="showInfo('ceca')">1951 - CECA</div>
+                        <div class="timeline-item" onclick="showInfo('cee')">1957 - CEE</div>
+                        <div class="timeline-item" onclick="showInfo('schengen')">1985 - Schengen</div>
+                        <div class="timeline-item" onclick="showInfo('maastricht')">1992 - Maastricht</div>
+                        <div class="timeline-item" onclick="showInfo('euro')">2002 - Euro</div>
+                        <div class="timeline-item" onclick="showInfo('brexit')">2020 - Brexit</div>
+                    </div>
+                </div>
+                
+                <div class="eu-map">
+                    <div class="map-overlay">
+                        <h2>🗺️ Mappa dell'Unione Europea</h2>
+                        <p>27 Stati membri dopo la Brexit</p>
+                        <div class="map-stats">
+                            <strong>Popolazione:</strong> circa 447 milioni di abitanti<br>
+                            <strong>Superficie:</strong> 4,2 milioni di km²<br>
+                            <strong>Lingue ufficiali:</strong> 24
+                        </div>
+                        
+                        <div style="margin-top: 20px;">
+                            <button class="interactive-button" onclick="showQuiz()">🧠 Quiz Interattivo</button>
+                            <button class="interactive-button" onclick="showInstitutions()">🏛️ Istituzioni</button>
+                            <button class="interactive-button" onclick="showValues()">⭐ Valori UE</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="interactive-content" id="quiz-content">
+                    <div class="quiz-section">
+                        <h3>🧠 Quiz sull'Unione Europea</h3>
+                        <div class="quiz-question">
+                            <strong>Quanti Stati membri ha attualmente l'UE?</strong>
+                            <div class="quiz-options">
+                                <div class="quiz-option" onclick="checkAnswer(this, false)">28</div>
+                                <div class="quiz-option" onclick="checkAnswer(this, true)">27</div>
+                                <div class="quiz-option" onclick="checkAnswer(this, false)">26</div>
+                                <div class="quiz-option" onclick="checkAnswer(this, false)">25</div>
+                            </div>
+                        </div>
+                        
+                        <div class="quiz-question">
+                            <strong>In che anno è nato l'Euro?</strong>
+                            <div class="quiz-options">
+                                <div class="quiz-option" onclick="checkAnswer(this, false)">1999</div>
+                                <div class="quiz-option" onclick="checkAnswer(this, true)">2002</div>
+                                <div class="quiz-option" onclick="checkAnswer(this, false)">2001</div>
+                                <div class="quiz-option" onclick="checkAnswer(this, false)">2000</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="interactive-content" id="institutions-content">
+                    <div class="institutions-grid">
+                        <div class="institution-card" onclick="highlightInstitution(this)">
+                            <h4>🏛️ Consiglio UE</h4>
+                            <p>Funzione legislativa, formato dai ministri dei governi</p>
+                        </div>
+                        <div class="institution-card" onclick="highlightInstitution(this)">
+                            <h4>🗳️ Parlamento Europeo</h4>
+                            <p>Approva e modifica le leggi, rappresenta i cittadini</p>
+                        </div>
+                        <div class="institution-card" onclick="highlightInstitution(this)">
+                            <h4>⚖️ Commissione Europea</h4>
+                            <p>Governo dell'UE, propone le leggi</p>
+                        </div>
+                        <div class="institution-card" onclick="highlightInstitution(this)">
+                            <h4>🎯 Consiglio Europeo</h4>
+                            <p>Definisce gli obiettivi politici dell'Unione</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="interactive-content" id="values-content">
+                    <div class="action-areas">
+                        <div class="action-item">🕊️ Libertà</div>
+                        <div class="action-item">⚖️ Democrazia</div>
+                        <div class="action-item">🤝 Uguaglianza</div>
+                        <div class="action-item">👥 Diritti Umani</div>
+                        <div class="action-item">🌱 Tutela Ambiente</div>
+                        <div class="action-item">🌍 Rispetto Diversità</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <div class="info-card">
+                    <h3><span class="icon">ℹ️</span>Informazioni Generali</h3>
+                    <ul class="info-list">
+                        <li><strong>27 Stati membri</strong> dopo la Brexit (2020)</li>
+                        <li><strong>Libera circolazione</strong> di merci e persone</li>
+                        <li><strong>Moneta comune:</strong> Euro (19 paesi)</li>
+                        <li><strong>Sede principale:</strong> Bruxelles, Belgio</li>
+                    </ul>
+                </div>
+                
+                <div class="info-card">
+                    <h3><span class="icon">🎯</span>Campi d'Azione</h3>
+                    <div class="action-areas">
+                        <div class="action-item">🛡️ Difesa mercati</div>
+                        <div class="action-item">🎓 Istruzione e scambi</div>
+                        <div class="action-item">🌾 Sostegno agricoltura</div>
+                        <div class="action-item">⚡ Energie rinnovabili</div>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h3><span class="icon">📊</span>Curiosità</h3>
+                    <ul class="info-list">
+                        <li>Programma <strong>Erasmus+</strong> per gli scambi</li>
+                        <li>Politiche per la <strong>sicurezza alimentare</strong></li>
+                        <li>Lotta contro il <strong>cambiamento climatico</strong></li>
+                        <li>Promozione della <strong>ricerca scientifica</strong></li>
+                    </ul>
+                </div>
+                
+                <div class="info-card" id="detail-info" style="display: none;">
+                    <h3 id="detail-title">Dettagli</h3>
+                    <div id="detail-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showInfo(period) {
+            const detailInfo = document.getElementById('detail-info');
+            const detailTitle = document.getElementById('detail-title');
+            const detailContent = document.getElementById('detail-content');
+            
+            const info = {
+                ceca: {
+                    title: "1951 - CECA",
+                    content: "La Comunità Europea del Carbone e dell'Acciaio è il primo passo verso l'integrazione europea. Nata dopo la Seconda Guerra Mondiale per controllare le industrie strategiche."
+                },
+                cee: {
+                    title: "1957 - CEE",
+                    content: "La Comunità Economica Europea viene istituita con i Trattati di Roma. Obiettivo: creare un mercato comune europeo."
+                },
+                schengen: {
+                    title: "1985 - Accordi di Schengen",
+                    content: "Eliminazione dei controlli alle frontiere interne, permettendo la libera circolazione delle persone in Europa."
+                },
+                maastricht: {
+                    title: "1992 - Trattato di Maastricht",
+                    content: "Nasce ufficialmente l'Unione Europea. Si introducono la cittadinanza europea e si prepara l'adozione dell'Euro."
+                },
+                euro: {
+                    title: "2002 - Introduzione dell'Euro",
+                    content: "L'Euro diventa la moneta unica per molti paesi dell'UE, facilitando commercio e viaggi."
+                },
+                brexit: {
+                    title: "2020 - Brexit",
+                    content: "Il Regno Unito esce dall'Unione Europea, riducendo il numero di Stati membri da 28 a 27."
+                }
+            };
+            
+            detailTitle.textContent = info[period].title;
+            detailContent.innerHTML = info[period].content;
+            detailInfo.style.display = 'block';
+            detailInfo.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function hideAllInteractiveContent() {
+            const contents = document.querySelectorAll('.interactive-content');
+            contents.forEach(content => content.classList.remove('active'));
+        }
+        
+        function showQuiz() {
+            hideAllInteractiveContent();
+            document.getElementById('quiz-content').classList.add('active');
+        }
+        
+        function showInstitutions() {
+            hideAllInteractiveContent();
+            document.getElementById('institutions-content').classList.add('active');
+        }
+        
+        function showValues() {
+            hideAllInteractiveContent();
+            document.getElementById('values-content').classList.add('active');
+        }
+        
+        function checkAnswer(element, isCorrect) {
+            if (isCorrect) {
+                element.classList.add('correct');
+                element.innerHTML += ' ✅';
+            } else {
+                element.classList.add('incorrect');
+                element.innerHTML += ' ❌';
+            }
+            
+            // Disabilita tutte le opzioni di questa domanda
+            const siblings = element.parentElement.querySelectorAll('.quiz-option');
+            siblings.forEach(sibling => {
+                sibling.style.pointerEvents = 'none';
+            });
+        }
+        
+        function highlightInstitution(element) {
+            // Rimuovi evidenziazione precedente
+            document.querySelectorAll('.institution-card').forEach(card => {
+                card.style.border = '2px solid transparent';
+            });
+            
+            // Evidenzia la carta selezionata
+            element.style.border = '2px solid #667eea';
+            element.style.boxShadow = '0 8px 16px rgba(102, 126, 234, 0.3)';
+        }
+        
+        // Animazione iniziale
+        window.addEventListener('load', () => {
+            const cards = document.querySelectorAll('.info-card, .timeline-item');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.animation = 'fadeIn 0.5s ease-in';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>
