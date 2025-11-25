@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mappa Interattiva delle Civiltà</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .map-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            padding: 40px;
+        }
+        
+        .region {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+        }
+        
+        .region:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .region.america {
+            border-color: #e74c3c;
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%);
+        }
+        
+        .region.africa {
+            border-color: #f39c12;
+            background: linear-gradient(135deg, #fffbf0 0%, #fff3d4 100%);
+        }
+        
+        .region.asia {
+            border-color: #3498db;
+            background: linear-gradient(135deg, #f0f8ff 0%, #d4e8ff 100%);
+        }
+        
+        .region-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .icon {
+            font-size: 1.5em;
+        }
+        
+        .civilization {
+            background: white;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid;
+            transition: all 0.2s ease;
+        }
+        
+        .civilization:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .america .civilization {
+            border-color: #e74c3c;
+        }
+        
+        .africa .civilization {
+            border-color: #f39c12;
+        }
+        
+        .asia .civilization {
+            border-color: #3498db;
+        }
+        
+        .civ-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+        
+        .civ-period {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2em;
+            cursor: pointer;
+            color: #7f8c8d;
+            background: none;
+            border: none;
+            transition: color 0.2s;
+        }
+        
+        .close-btn:hover {
+            color: #e74c3c;
+        }
+        
+        .modal-title {
+            font-size: 2em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid;
+        }
+        
+        .modal-content.america .modal-title {
+            border-color: #e74c3c;
+        }
+        
+        .modal-content.africa .modal-title {
+            border-color: #f39c12;
+        }
+        
+        .modal-content.asia .modal-title {
+            border-color: #3498db;
+        }
+        
+        .modal-text {
+            line-height: 1.8;
+            color: #34495e;
+            font-size: 1.05em;
+        }
+        
+        .modal-text h3 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .modal-text ul {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+        
+        .modal-text li {
+            margin: 5px 0;
+        }
+        
+        @media (max-width: 1024px) {
+            .map-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌍 Le Civiltà al di Fuori dell'Europa</h1>
+            <p class="subtitle">Clicca su ogni civiltà per scoprire la sua storia</p>
+        </header>
+        
+        <div class="map-container">
+            <!-- AMERICA -->
+            <div class="region america">
+                <div class="region-title">
+                    <span class="icon">🌎</span>
+                    <span>AMERICA</span>
+                </div>
+                <div class="civilization" onclick="openModal('maya')">
+                    <div class="civ-name">🏛️ Maya</div>
+                    <div class="civ-period">Dal I millennio a.C. - America Centrale</div>
+                </div>
+                <div class="civilization" onclick="openModal('aztechi')">
+                    <div class="civ-name">⚔️ Aztechi</div>
+                    <div class="civ-period">Trecento - Messico</div>
+                </div>
+                <div class="civilization" onclick="openModal('inca')">
+                    <div class="civ-name">⛰️ Inca</div>
+                    <div class="civ-period">America Meridionale - Ande</div>
+                </div>
+            </div>
+            
+            <!-- AFRICA -->
+            <div class="region africa">
+                <div class="region-title">
+                    <span class="icon">🌍</span>
+                    <span>AFRICA</span>
+                </div>
+                <div class="civilization" onclick="openModal('ghana')">
+                    <div class="civ-name">👑 Regno del Ghana</div>
+                    <div class="civ-period">A sud del fiume Senegal</div>
+                </div>
+                <div class="civilization" onclick="openModal('mali')">
+                    <div class="civ-name">💰 Impero del Mali</div>
+                    <div class="civ-period">Dal 1240 - Africa Centrale</div>
+                </div>
+                <div class="civilization" onclick="openModal('congo')">
+                    <div class="civ-name">🌴 Regno del Congo</div>
+                    <div class="civ-period">XIV secolo</div>
+                </div>
+                <div class="civilization" onclick="openModal('etiopia')">
+                    <div class="civ-name">✝️ Impero Etiope</div>
+                    <div class="civ-period">Dal IV secolo - Africa Orientale</div>
+                </div>
+                <div class="civilization" onclick="openModal('swahili')">
+                    <div class="civ-name">🚢 Città-stato Swahili</div>
+                    <div class="civ-period">Costa Oceano Indiano</div>
+                </div>
+            </div>
+            
+            <!-- ASIA -->
+            <div class="region asia">
+                <div class="region-title">
+                    <span class="icon">🌏</span>
+                    <span>ASIA</span>
+                </div>
+                <div class="civilization" onclick="openModal('india')">
+                    <div class="civ-name">🕉️ India</div>
+                    <div class="civ-period">Civiltà antichissima</div>
+                </div>
+                <div class="civilization" onclick="openModal('giappone')">
+                    <div class="civ-name">🗾 Giappone</div>
+                    <div class="civ-period">Dinastia Tokugawa 1603-1868</div>
+                </div>
+                <div class="civilization" onclick="openModal('cina')">
+                    <div class="civ-name">🐉 Cina</div>
+                    <div class="civ-period">Dal III secolo a.C.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL -->
+    <div id="modal" class="modal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+    
+    <script>
+        const civilizations = {
+            maya: {
+                title: "🏛️ I Maya",
+                content: `
+                    <p>Una delle grandi civiltà sviluppatesi in America centrale a partire dal I millennio a.C.</p>
+                    
+                    <h3>Caratteristiche principali:</h3>
+                    <ul>
+                        <li><strong>Agricoltura avanzata:</strong> Non usano l'aratro ma costruiscono una complicata rete di canali per l'irrigazione</li>
+                        <li><strong>Organizzazione politica:</strong> Società organizzata in città-stato autonome politicamente ma con lingua e religione comuni</li>
+                        <li><strong>Architettura:</strong> Città costruite attorno a grandi piazze con templi a piramide a gradoni, collocati secondo precisi calcoli astronomici</li>
+                        <li><strong>Scienza:</strong> Abili matematici e astronomi</li>
+                        <li><strong>Scrittura:</strong> Usano una scrittura geroglifica non ancora completamente decifrata</li>
+                    </ul>
+                `,
+                class: 'america'
+            },
+            aztechi: {
+                title: "⚔️ Gli Aztechi",
+                content: `
+                    <p>Popolo guerriero stanziato nell'attuale Messico. In origine nomadi, nel Trecento si stabiliscono sul lago Texcoco.</p>
+                    
+                    <h3>L'Impero:</h3>
+                    <p>Sottomettono le popolazioni vicine fino a fondare un grande impero con Montezuma I (1440-1468).</p>
+                    
+                    <h3>Struttura sociale (a piramide):</h3>
+                    <ul>
+                        <li>Al vertice: l'Imperatore</li>
+                        <li>Nobili e Sacerdoti</li>
+                        <li>Contadini e Artigiani</li>
+                        <li>Alla base: gli Schiavi</li>
+                    </ul>
+                    
+                    <h3>Caratteristiche:</h3>
+                    <ul>
+                        <li><strong>Militarismo:</strong> Tutti i cittadini hanno addestramento militare</li>
+                        <li><strong>Religione:</strong> I prigionieri di guerra sono offerti in sacrificio agli dèi, guidati dal dio Sole</li>
+                        <li><strong>Capitale:</strong> Tenochtitlan (l'attuale Città del Messico), splendida città con templi, grandi palazzi ornati da sculture e giardini</li>
+                    </ul>
+                `,
+                class: 'america'
+            },
+            inca: {
+                title: "⛰️ L'Impero Inca",
+                content: `
+                    <p>Vasto impero sviluppatosi in America meridionale, con capitale a Cuzco (oggi in Perù).</p>
+                    
+                    <h3>Infrastrutture:</h3>
+                    <ul>
+                        <li><strong>Rete stradale:</strong> 10.000 chilometri di strade collegano tutto il territorio</li>
+                        <li><strong>Terrazzamenti:</strong> Costruiti sulle pendici delle montagne per coltivare la terra</li>
+                    </ul>
+                    
+                    <h3>Economia:</h3>
+                    <ul>
+                        <li><strong>Agricoltura:</strong> Coltivazione di mais e patate</li>
+                        <li><strong>Pastorizia:</strong> Allevamento di lama, guanaco e vigogna (animali adatti alle alte vette delle Ande che forniscono latte e lane pregiate)</li>
+                    </ul>
+                    
+                    <h3>Organizzazione sociale:</h3>
+                    <ul>
+                        <li><strong>Comunità rurali:</strong> Fortemente solidali tra loro</li>
+                        <li><strong>L'Imperatore:</strong> Considerato un dio (Inca significa "Dio Sole")</li>
+                        <li><strong>Amministrazione:</strong> Affidata a una potente burocrazia</li>
+                        <li><strong>Lavoro:</strong> Il popolo svolge lavori massacranti per opere pubbliche, ricevendo in cambio tessuti, indumenti e cibo</li>
+                    </ul>
+                `,
+                class: 'america'
+            },
+            ghana: {
+                title: "👑 Il Regno del Ghana",
+                content: `
+                    <p>Regno sviluppatosi a sud del fiume Senegal, in Africa centrale.</p>
+                    
+                    <h3>Commercio:</h3>
+                    <p>Il Ghana prosperava grazie agli scambi commerciali con i mercanti arabi:</p>
+                    <ul>
+                        <li><strong>Esportazioni:</strong> Oro, avorio (dalle zanne degli elefanti), pietre preziose e pellicce di animali</li>
+                        <li><strong>Importazioni:</strong> Sale portato dagli Arabi</li>
+                    </ul>
+                    
+                    <h3>Storia:</h3>
+                    <p>Attorno al 1240, il Ghana viene assorbito dall'Impero del Mali.</p>
+                `,
+                class: 'africa'
+            },
+            mali: {
+                title: "💰 L'Impero del Mali",
+                content: `
+                    <p>Grande impero che si sviluppa in Africa centrale a partire dal 1240, assorbendo il Regno del Ghana.</p>
+                    
+                    <h3>Caratteristiche:</h3>
+                    <ul>
+                        <li>Territorio ricco di acqua, foreste e ricchezze naturali</li>
+                        <li>Protetto dal deserto del Sahara</li>
+                        <li>Importanti commerci con i mercanti arabi</li>
+                    </ul>
+                `,
+                class: 'africa'
+            },
+            congo: {
+                title: "🌴 Il Regno del Congo",
+                content: `
+                    <p>Regno sviluppatosi nel XIV secolo nella parte meridionale dell'Africa centrale.</p>
+                    
+                    <h3>Territorio:</h3>
+                    <p>Zona ricca di acqua, foreste e risorse naturali, rimasta a lungo isolata grazie alla protezione naturale del deserto del Sahara.</p>
+                `,
+                class: 'africa'
+            },
+            etiopia: {
+                title: "✝️ L'Impero Etiope",
+                content: `
+                    <p>Impero nato dal Regno di Axum (IV secolo) in Africa orientale.</p>
+                    
+                    <h3>Caratteristica distintiva:</h3>
+                    <p><strong>Unico Paese cristiano</strong> in un territorio di fede islamica, che lo rende unico nel contesto africano dell'epoca.</p>
+                `,
+                class: 'africa'
+            },
+            swahili: {
+                title: "🚢 Le Città-stato Swahili",
+                content: `
+                    <p>Città-stato sviluppatesi lungo la costa dell'Oceano Indiano in Africa orientale.</p>
+                    
+                    <h3>Lingua e Cultura:</h3>
+                    <p>Condividono una lingua comune: lo <strong>swahili</strong>.</p>
+                    
+                    <h3>Commercio prospero:</h3>
+                    <ul>
+                        <li><strong>Dall'India arrivano:</strong> Stoffe e spezie</li>
+                        <li><strong>Dall'Africa partono:</strong> Avorio, semi di caffè e soprattutto oro</li>
+                    </ul>
+                `,
+                class: 'africa'
+            },
+            india: {
+                title: "🕉️ La Civiltà Indiana",
+                content: `
+                    <p>Civiltà con una storia antichissima.</p>
+                    
+                    <h3>Lingua e Religione:</h3>
+                    <ul>
+                        <li><strong>Lingua:</strong> Sanscrito</li>
+                        <li><strong>Religione principale:</strong> Induismo</li>
+                        <li><strong>Dal X secolo:</strong> Si affianca l'Islam</li>
+                    </ul>
+                    
+                    <h3>Economia:</h3>
+                    <ul>
+                        <li><strong>Agricoltura:</strong> Cotone e spezie</li>
+                        <li><strong>Allevamento:</strong> Pollame e ovini (l'induismo vieta il consumo di carne bovina)</li>
+                    </ul>
+                    
+                    <h3>Sistema delle Caste:</h3>
+                    <ul>
+                        <li><strong>Al vertice:</strong> Bramini (sacerdoti)</li>
+                        <li>Guerrieri</li>
+                        <li>Mercanti e contadini</li>
+                        <li>Servi</li>
+                        <li><strong>Fuori dalle caste:</strong> Dalit, gli "intoccabili" (lavori più umili)</li>
+                    </ul>
+                    
+                    <h3>Tensioni:</h3>
+                    <p>La convivenza tra induisti e musulmani spesso dà origine a scontri che influenzano la storia politica del Paese.</p>
+                `,
+                class: 'asia'
+            },
+            giappone: {
+                title: "🗾 Il Giappone Feudale",
+                content: `
+                    <p>Civiltà feudale chiusa alle influenze straniere.</p>
+                    
+                    <h3>Struttura Politica:</h3>
+                    <ul>
+                        <li><strong>L'Imperatore:</strong> Al vertice, venerato come un dio ma con solo funzioni simboliche</li>
+                        <li><strong>Lo Shogun:</strong> Il vero capo politico, comandante militare</li>
+                        <li><strong>I Daimyo:</strong> Grandi proprietari terrieri che controllano le province</li>
+                        <li><strong>I Samurai:</strong> Guerrieri che sostengono i daimyo</li>
+                    </ul>
+                    
+                    <h3>Dinastia Tokugawa:</h3>
+                    <p>Dopo un lungo periodo di instabilità causato dalle lotte di potere tra shogun e daimyo, la famiglia Tokugawa governa il Giappone dal <strong>1603 al 1868</strong>.</p>
+                `,
+                class: 'asia'
+            },
+            cina: {
+                title: "🐉 Il Grande Impero Cinese",
+                content: `
+                    <p>Dal III secolo a.C. la Cina è un Paese unito con forte sviluppo economico e culturale.</p>
+                    
+                    <h3>Innovazioni (Dinastia Song 960-1279):</h3>
+                    <ul>
+                        <li>Carta</li>
+                        <li>Polvere da sparo</li>
+                        <li>Bussola</li>
+                        <li>Banconote</li>
+                    </ul>
+                    
+                    <h3>Dinastia Ming (dal 1368):</h3>
+                    <ul>
+                        <li><strong>Forte sviluppo:</strong> Agricolo e commerciale</li>
+                        <li><strong>Produzione della seta:</strong> Dal I secolo d.C.</li>
+                        <li><strong>Scoperte:</strong> Scientifiche e mediche importanti</li>
+                    </ul>
+                    
+                    <h3>Architettura:</h3>
+                    <p>A Pechino viene costruita la <strong>"Città proibita"</strong>, gigantesco complesso del palazzo imperiale.</p>
+                    
+                    <h3>I Mandarini (Quattrocento):</h3>
+                    <p>Potenti funzionari statali che cominciano a governare, isolando l'impero dal resto del mondo.</p>
+                `,
+                class: 'asia'
+            }
+        };
+        
+        function openModal(civKey) {
+            const modal = document.getElementById('modal');
+            const modalBody = document.getElementById('modal-body');
+            const civ = civilizations[civKey];
+            
+            modalBody.innerHTML = `
+                <h2 class="modal-title">${civ.title}</h2>
+                <div class="modal-text">${civ.content}</div>
+            `;
+            
+            const modalContent = modal.querySelector('.modal-content');
+            modalContent.className = 'modal-content ' + civ.class;
+            
+            modal.classList.add('active');
+        }
+        
+        function closeModal(event) {
+            const modal = document.getElementById('modal');
+            if (!event || event.target === modal) {
+                modal.classList.remove('active');
+            }
+        }
+        
+        // Chiudi con ESC
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
