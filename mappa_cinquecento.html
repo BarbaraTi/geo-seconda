@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L'Europa del Cinquecento - Mappa Interattiva</title>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #8B4513;
+            --secondary: #D4AF37;
+            --accent: #C41E3A;
+            --dark: #2C1810;
+            --light: #F5E6D3;
+            --text: #3A2618;
+        }
+
+        body {
+            font-family: 'Crimson Text', serif;
+            background: linear-gradient(135deg, #F5E6D3 0%, #E8D4BC 100%);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        .parchment-texture {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(139, 69, 19, 0.03) 2px, rgba(139, 69, 19, 0.03) 4px),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(139, 69, 19, 0.03) 2px, rgba(139, 69, 19, 0.03) 4px);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 3.5rem;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            color: var(--accent);
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        .timeline {
+            position: relative;
+            margin: 3rem 0;
+            padding: 2rem 0;
+        }
+
+        .timeline-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--secondary), var(--accent));
+            transform: translateX(-50%);
+        }
+
+        .timeline-event {
+            position: relative;
+            margin: 2rem 0;
+            opacity: 0;
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        .timeline-event:nth-child(1) { animation-delay: 0.2s; }
+        .timeline-event:nth-child(2) { animation-delay: 0.4s; }
+        .timeline-event:nth-child(3) { animation-delay: 0.6s; }
+        .timeline-event:nth-child(4) { animation-delay: 0.8s; }
+        .timeline-event:nth-child(5) { animation-delay: 1s; }
+        .timeline-event:nth-child(6) { animation-delay: 1.2s; }
+
+        .timeline-event.left {
+            padding-right: 52%;
+            text-align: right;
+        }
+
+        .timeline-event.right {
+            padding-left: 52%;
+            text-align: left;
+        }
+
+        .event-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(245,230,211,0.9) 100%);
+            border: 3px solid var(--primary);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        .event-card:hover {
+            transform: scale(1.05) translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+            border-color: var(--accent);
+        }
+
+        .event-card::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: var(--secondary);
+            border: 4px solid var(--primary);
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+        }
+
+        .timeline-event.left .event-card::before {
+            right: -62px;
+        }
+
+        .timeline-event.right .event-card::before {
+            left: -62px;
+        }
+
+        .event-year {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .event-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .event-description {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: var(--text);
+        }
+
+        .map-section {
+            margin: 4rem 0;
+            background: rgba(255,255,255,0.8);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .map-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.5rem;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .territories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .territory-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(245,230,211,0.95) 100%);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .territory-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--accent), var(--secondary));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .territory-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .territory-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .territory-name {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.8rem;
+        }
+
+        .territory-ruler {
+            font-size: 1.1rem;
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .territory-info {
+            font-size: 1rem;
+            line-height: 1.5;
+            color: var(--text);
+        }
+
+        .characters-section {
+            margin: 4rem 0;
+        }
+
+        .characters-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.5rem;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .characters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .character-card {
+            background: rgba(255,255,255,0.9);
+            border: 3px solid var(--primary);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.4s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .character-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(212,175,55,0.1) 0%, transparent 70%);
+            transform: scale(0);
+            transition: transform 0.6s ease;
+        }
+
+        .character-card:hover::after {
+            transform: scale(1);
+        }
+
+        .character-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            border-color: var(--secondary);
+        }
+
+        .character-initial {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 4rem;
+            font-weight: 700;
+            color: var(--accent);
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--light), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            border: 4px solid var(--primary);
+            position: relative;
+            z-index: 1;
+        }
+
+        .character-name {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .character-role {
+            font-size: 1rem;
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .character-description {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--text);
+            position: relative;
+            z-index: 1;
+        }
+
+        .legend {
+            margin: 3rem 0;
+            padding: 2rem;
+            background: rgba(255,255,255,0.7);
+            border-radius: 15px;
+            border: 2px dashed var(--primary);
+        }
+
+        .legend-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .legend-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            border: 2px solid var(--primary);
+        }
+
+        .legend-label {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding: 2rem;
+            border-top: 3px double var(--primary);
+        }
+
+        .footer-text {
+            font-size: 1rem;
+            color: var(--text);
+            opacity: 0.8;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .timeline-event.left,
+            .timeline-event.right {
+                padding: 0;
+                text-align: left;
+                padding-left: 3rem;
+            }
+
+            .timeline-line {
+                left: 1rem;
+            }
+
+            .timeline-event.left .event-card::before,
+            .timeline-event.right .event-card::before {
+                left: -42px;
+            }
+
+            .territories-grid,
+            .characters-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, var(--light) 0%, #E8D4BC 100%);
+            border: 4px solid var(--primary);
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalSlideIn 0.4s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 40px;
+            height: 40px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            transform: rotate(90deg);
+            background: var(--primary);
+        }
+
+        .modal-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .modal-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text);
+        }
+    </style>
+</head>
+<body>
+    <div class="parchment-texture"></div>
+    
+    <div class="container">
+        <header>
+            <h1>L'Europa del Cinquecento</h1>
+            <p class="subtitle">Le Guerre d'Italia e gli Imperi</p>
+        </header>
+
+        <section class="timeline">
+            <div class="timeline-line"></div>
+            
+            <div class="timeline-event left" onclick="openModal('event1')">
+                <div class="event-card">
+                    <div class="event-year">1494</div>
+                    <div class="event-title">Carlo VIII Invade l'Italia</div>
+                    <div class="event-description">
+                        Il re di Francia approfitta della debolezza politica italiana e conquista il Regno di Napoli senza combattere.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-event right" onclick="openModal('event2')">
+                <div class="event-card">
+                    <div class="event-year">1495</div>
+                    <div class="event-title">Battaglia di Fornovo</div>
+                    <div class="event-description">
+                        La Lega Italiana sconfigge i francesi, ma emerge la debolezza dell'Italia che diventa terra di conquista.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-event left" onclick="openModal('event3')">
+                <div class="event-card">
+                    <div class="event-year">1525</div>
+                    <div class="event-title">Battaglia di Pavia</div>
+                    <div class="event-description">
+                        L'esercito imperiale di Carlo V sconfigge i francesi. La Spagna consolida il dominio in Italia.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-event right" onclick="openModal('event4')">
+                <div class="event-card">
+                    <div class="event-year">1527</div>
+                    <div class="event-title">Sacco di Roma</div>
+                    <div class="event-description">
+                        I lanzichenecchi di Carlo V saccheggiano Roma, evento traumatico che segna la fine del Rinascimento.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-event left" onclick="openModal('event5')">
+                <div class="event-card">
+                    <div class="event-year">1559</div>
+                    <div class="event-title">Pace di Cateau-Cambrésis</div>
+                    <div class="event-description">
+                        Termina la guerra tra Francia e Spagna. Quasi tutta l'Italia passa sotto il dominio spagnolo.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-event right" onclick="openModal('event6')">
+                <div class="event-card">
+                    <div class="event-year">1571</div>
+                    <div class="event-title">Battaglia di Lepanto</div>
+                    <div class="event-description">
+                        La Lega Santa sconfigge la flotta ottomana, fermando l'espansione turca nel Mediterraneo.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="map-section">
+            <h2 class="map-title">I Territori dopo il 1559</h2>
+            
+            <div class="territories-grid">
+                <div class="territory-card">
+                    <div class="territory-name">🇪🇸 Domini Spagnoli</div>
+                    <div class="territory-ruler">Filippo II d'Asburgo</div>
+                    <div class="territory-info">
+                        • Regno di Napoli<br>
+                        • Ducato di Milano<br>
+                        • Regno di Sicilia<br>
+                        • Regno di Sardegna<br>
+                        • Granducato di Toscana (influenza)<br>
+                        • Repubblica di Genova (influenza)
+                    </div>
+                </div>
+
+                <div class="territory-card">
+                    <div class="territory-name">🇫🇷 Francia</div>
+                    <div class="territory-ruler">Enrico IV di Borbone</div>
+                    <div class="territory-info">
+                        • Regno unificato<br>
+                        • Editto di Nantes (1598)<br>
+                        • Pacificazione religiosa<br>
+                        • Fine delle guerre di religione
+                    </div>
+                </div>
+
+                <div class="territory-card">
+                    <div class="territory-name">🦁 Repubblica di Venezia</div>
+                    <div class="territory-ruler">Doge e Senato</div>
+                    <div class="territory-info">
+                        • Unico stato italiano indipendente<br>
+                        • Potenza marittima<br>
+                        • Territori in terraferma<br>
+                        • Possedimenti nel Mediterraneo orientale
+                    </div>
+                </div>
+
+                <div class="territory-card">
+                    <div class="territory-name">⚜️ Sacro Romano Impero</div>
+                    <div class="territory-ruler">Ferdinando I d'Asburgo</div>
+                    <div class="territory-info">
+                        • Austria, Germania<br>
+                        • Ungheria, Boemia<br>
+                        • Conflitti religiosi interni<br>
+                        • Riforma protestante
+                    </div>
+                </div>
+
+                <div class="territory-card">
+                    <div class="territory-name">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra</div>
+                    <div class="territory-ruler">Elisabetta I</div>
+                    <div class="territory-info">
+                        • Età elisabettiana<br>
+                        • Chiesa anglicana<br>
+                        • Espansione coloniale<br>
+                        • Sconfitta dell'Invincibile Armada (1588)
+                    </div>
+                </div>
+
+                <div class="territory-card">
+                    <div class="territory-name">🌙 Impero Ottomano</div>
+                    <div class="territory-ruler">Solimano il Magnifico</div>
+                    <div class="territory-info">
+                        • Balcani, Grecia<br>
+                        • Nord Africa<br>
+                        • Minaccia per l'Europa cristiana<br>
+                        • Fermato a Lepanto (1571)
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="characters-section">
+            <h2 class="characters-title">Protagonisti del Secolo</h2>
+            
+            <div class="characters-grid">
+                <div class="character-card" onclick="openModal('char1')">
+                    <div class="character-initial">CV</div>
+                    <div class="character-name">Carlo V</div>
+                    <div class="character-role">Imperatore (1519-1556)</div>
+                    <div class="character-description">
+                        Sovrano del più vasto impero europeo. Difensore della fede cattolica contro i protestanti.
+                    </div>
+                </div>
+
+                <div class="character-card" onclick="openModal('char2')">
+                    <div class="character-initial">F2</div>
+                    <div class="character-name">Filippo II</div>
+                    <div class="character-role">Re di Spagna (1556-1598)</div>
+                    <div class="character-description">
+                        Figlio di Carlo V. Porta la Spagna all'apice della potenza ma subisce gravi sconfitte.
+                    </div>
+                </div>
+
+                <div class="character-card" onclick="openModal('char3')">
+                    <div class="character-initial">E1</div>
+                    <div class="character-name">Elisabetta I</div>
+                    <div class="character-role">Regina d'Inghilterra (1558-1603)</div>
+                    <div class="character-description">
+                        L'età elisabettiana: prosperità economica, fioritura culturale e supremazia marittima.
+                    </div>
+                </div>
+
+                <div class="character-card" onclick="openModal('char4')">
+                    <div class="character-initial">E4</div>
+                    <div class="character-name">Enrico IV</div>
+                    <div class="character-role">Re di Francia (1589-1610)</div>
+                    <div class="character-description">
+                        Pone fine alle guerre di religione con l'Editto di Nantes, garantendo libertà di culto.
+                    </div>
+                </div>
+
+                <div class="character-card" onclick="openModal('char5')">
+                    <div class="character-initial">SM</div>
+                    <div class="character-name">Solimano</div>
+                    <div class="character-role">Sultano Ottomano (1520-1566)</div>
+                    <div class="character-description">
+                        Porta l'Impero Ottomano alla massima espansione, arrivando fino a Vienna.
+                    </div>
+                </div>
+
+                <div class="character-card" onclick="openModal('char6')">
+                    <div class="character-initial">LS</div>
+                    <div class="character-name">Ludovico il Moro</div>
+                    <div class="character-role">Duca di Milano (1494-1499)</div>
+                    <div class="character-description">
+                        Invita Carlo VIII in Italia, aprendo così le porte alle invasioni straniere.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="legend">
+            <h3 class="legend-title">Legenda delle Potenze</h3>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #C41E3A;"></div>
+                    <span class="legend-label">Spagna</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #0055A4;"></div>
+                    <span class="legend-label">Francia</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #FFD700;"></div>
+                    <span class="legend-label">Impero</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #E34234;"></div>
+                    <span class="legend-label">Ottomani</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #8B4513;"></div>
+                    <span class="legend-label">Stati Italiani</span>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p class="footer-text">
+                Mappa Interattiva - Le Guerre d'Italia e l'Europa del Cinquecento<br>
+                Materiale didattico per l'insegnamento della storia
+            </p>
+        </footer>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <h3 class="modal-title" id="modalTitle"></h3>
+            <div class="modal-text" id="modalText"></div>
+        </div>
+    </div>
+
+    <script>
+        const modalData = {
+            event1: {
+                title: "1494 - Carlo VIII Invade l'Italia",
+                text: `<p><strong>Contesto:</strong> Alla fine del Quattrocento l'Italia è divisa in tanti Stati che convivono in un equilibrio precario, rotto dalla morte di Lorenzo il Magnifico nel 1492.</p>
+                
+                <p><strong>L'invasione:</strong> Carlo VIII di Francia rivendica il trono del Regno di Napoli e viene appoggiato da Ludovico Sforza detto "il Moro", duca di Milano. Nel 1494 entra in Italia con un esercito numeroso.</p>
+                
+                <p><strong>Conseguenze:</strong> Carlo VIII conquista il Regno di Napoli senza combattere. Gli Stati italiani non si oppongono al suo passaggio, rivelando la loro debolezza militare. Questo evento apre la strada a decenni di invasioni straniere in Italia.</p>
+                
+                <p><strong>Significato storico:</strong> Segna l'inizio delle Guerre d'Italia che dureranno oltre sessant'anni, trasformando la penisola in un campo di battaglia tra le grandi potenze europee.</p>`
+            },
+            event2: {
+                title: "1495 - Battaglia di Fornovo",
+                text: `<p><strong>La Lega Italiana:</strong> Dopo aver visto la facilità con cui Carlo VIII si è impadronito di Napoli, gli Stati italiani si uniscono nella Lega Italiana, appoggiata da Massimiliano I d'Austria e dalla Spagna.</p>
+                
+                <p><strong>Lo scontro:</strong> Nel luglio 1495 le truppe della Lega si scontrano con quelle francesi a Fornovo sul Taro. I Francesi subiscono perdite così gravi che Carlo VIII è costretto a rinunciare al Regno di Napoli e tornare in Francia.</p>
+                
+                <p><strong>Il paradosso:</strong> Nonostante la vittoria militare, la battaglia rivela la debolezza strutturale dell'Italia. Gli Stati italiani hanno bisogno dell'aiuto straniero anche per difendersi, dimostrando la loro incapacità di unirsi autonomamente.</p>
+                
+                <p><strong>Conseguenze:</strong> L'Italia diventa definitivamente terra di conquista per le potenze europee. Francia e Spagna iniziano una lunga contesa per il controllo della penisola.</p>`
+            },
+            event3: {
+                title: "1525 - Battaglia di Pavia",
+                text: `<p><strong>Il conflitto:</strong> La guerra tra Francia e Spagna per il dominio in Europa continua. Il Ducato di Milano, assegnato ai Francesi dalla pace di Noyon (1516), diventa obiettivo strategico degli Spagnoli di Carlo V.</p>
+                
+                <p><strong>Lo scontro decisivo:</strong> Il 24 febbraio 1525 presso Pavia si combatte una battaglia cruciale. L'esercito imperiale di Carlo V sconfigge completamente quello francese. Il re Francesco I viene catturato e portato prigioniero in Spagna.</p>
+                
+                <p><strong>Conseguenze immediate:</strong> La vittoria consolida il dominio spagnolo in Italia settentrionale. Milano passa definitivamente sotto controllo imperiale, garantendo il collegamento tra i vari domini di Carlo V.</p>
+                
+                <p><strong>Importanza strategica:</strong> La battaglia segna un punto di svolta nel controllo dell'Italia. La Spagna diventa la potenza dominante nella penisola per i successivi due secoli.</p>`
+            },
+            event4: {
+                title: "1527 - Il Sacco di Roma",
+                text: `<p><strong>La Lega di Cognac:</strong> Nel 1526 si forma un'alleanza tra Francia e alcuni Stati italiani (tra cui lo Stato Pontificio e Venezia) per opporsi al crescente potere di Carlo V. Il papa Clemente VII guida questa coalizione.</p>
+                
+                <p><strong>L'invasione:</strong> Nel 1527 l'esercito imperiale, composto anche da truppe mercenarie tedesche lanzichenecche (molte delle quali protestanti), marcia verso Roma. Il 6 maggio inizia il saccheggio della città.</p>
+                
+                <p><strong>La devastazione:</strong> Roma viene saccheggiata per mesi. Chiese, palazzi, opere d'arte vengono distrutte o rubate. La popolazione subisce violenze terribili. Papa Clemente VII si rifugia in Castel Sant'Angelo.</p>
+                
+                <p><strong>Significato culturale:</strong> Il Sacco di Roma del 1527 è considerato da molti storici come la fine simbolica del Rinascimento italiano. La città eterna, cuore della cristianità, viene profanata dall'esercito di un imperatore cattolico.</p>`
+            },
+            event5: {
+                title: "1559 - Pace di Cateau-Cambrésis",
+                text: `<p><strong>La fine delle guerre:</strong> Dopo oltre sessant'anni di conflitti continui, Francia e Spagna firmano finalmente la pace. Entrambe le potenze sono esauste militarmente ed economicamente.</p>
+                
+                <p><strong>I termini della pace:</strong> La Francia rinuncia definitivamente alle sue pretese sull'Italia. La Spagna ottiene il controllo di Milano, Napoli, Sicilia e Sardegna. Anche Genova e il Granducato di Toscana entrano nell'orbita spagnola.</p>
+                
+                <p><strong>L'Italia sotto dominio straniero:</strong> Quasi tutta la penisola passa sotto il controllo degli Asburgo di Spagna. Solo la Repubblica di Venezia mantiene la sua indipendenza, ma in posizione sempre più isolata.</p>
+                
+                <p><strong>Conseguenze a lungo termine:</strong> Questa pace sancisce oltre due secoli di dominio spagnolo in Italia. La penisola perde definitivamente la sua autonomia politica e diventa periferia degli imperi europei. Il declino economico e politico italiano si accentua nei decenni successivi.</p>`
+            },
+            event6: {
+                title: "1571 - Battaglia di Lepanto",
+                text: `<p><strong>La minaccia ottomana:</strong> Sotto Solimano il Magnifico, l'Impero Ottomano raggiunge la sua massima espansione, arrivando fino alle porte di Vienna nel 1529. Nel 1570 i Turchi conquistano Cipro, possedimento veneziano.</p>
+                
+                <p><strong>La Lega Santa:</strong> Papa Pio V organizza una grande coalizione di potenze cristiane: Spagna di Filippo II, Repubblica di Venezia, Repubblica di Genova, Ducato di Savoia, Cavalieri di Malta e Stato Pontificio.</p>
+                
+                <p><strong>Lo scontro navale:</strong> Il 7 ottobre 1571 nelle acque del golfo di Lepanto (Grecia occidentale) si svolge una delle più grandi battaglie navali della storia. La flotta cristiana è comandata da Don Giovanni d'Austria, fratellastro di Filippo II.</p>
+                
+                <p><strong>La vittoria:</strong> Grazie alla superiorità degli armamenti (soprattutto l'artiglieria delle galee veneziane), la Lega Santa ottiene una schiacciante vittoria. La flotta ottomana perde oltre 200 navi e 30.000 uomini.</p>
+                
+                <p><strong>Conseguenze:</strong> Gli Ottomani perdono la supremazia marittima nel Mediterraneo, anche se mantengono il controllo terrestre dei Balcani. La vittoria ferma l'espansione turca verso l'Europa occidentale e ha grande risonanza simbolica nella cristianità.</p>`
+            },
+            char1: {
+                title: "Carlo V d'Asburgo (1500-1558)",
+                text: `<p><strong>L'Impero più vasto:</strong> Carlo V governa su un impero vastissimo: Austria, Germania, Ungheria, Boemia, Paesi Bassi, Spagna, Regno di Napoli, Sicilia, Sardegna e le colonie americane. È il sovrano più potente d'Europa.</p>
+                
+                <p><strong>Il sogno dell'impero universale:</strong> Carlo V vuole costruire un impero universale unito dalla fede cattolica. Si considera il difensore della cristianità contro due minacce: la Riforma protestante dall'interno e l'Impero Ottomano dall'esterno.</p>
+                
+                <p><strong>I conflitti continui:</strong> Deve combattere su più fronti: contro Francesco I di Francia che si allea con i protestanti tedeschi, contro i principi luterani in Germania, contro i Turchi che minacciano Vienna e il Mediterraneo.</p>
+                
+                <p><strong>L'abdicazione:</strong> Nel 1556, esausto e deluso dal non essere riuscito a realizzare il suo sogno di impero universale, abdica. Divide i suoi domini tra il fratello Ferdinando (Impero, Austria, Ungheria, Boemia) e il figlio Filippo II (Spagna, Italia, Paesi Bassi, colonie americane).</p>
+                
+                <p><strong>Eredità:</strong> Lascia un'Europa profondamente divisa tra cattolici e protestanti. Il suo tentativo di mantenere l'unità religiosa dell'Occidente cristiano è fallito.</p>`
+            },
+            char2: {
+                title: "Filippo II di Spagna (1527-1598)",
+                text: `<p><strong>Il re cattolico:</strong> Figlio di Carlo V, Filippo II è un sovrano profondamente religioso che rifiuta ogni compromesso con i protestanti. Il suo regno (1556-1598) porta la Spagna all'apice della potenza ma anche alle prime grandi sconfitte.</p>
+                
+                <p><strong>Ricchezze immense:</strong> La Spagna controlla il flusso di argento dall'America, le colonie portoghesi in India e Indonesia, i territori ricchissimi del Ducato di Milano e dei Paesi Bassi. È la potenza economica dominante.</p>
+                
+                <p><strong>Le guerre di religione:</strong> Nei Paesi Bassi protestanti scoppiano continue rivolte. Filippo II invia eserciti per reprimerle, ma nel 1581 le province del nord si dichiarano indipendenti formando le Province Unite (Olanda).</p>
+                
+                <p><strong>Il disastro dell'Invincibile Armada:</strong> Nel 1588 Filippo II tenta di invadere l'Inghilterra protestante di Elisabetta I. La sua potentissima flotta, l'Invincible Armada, viene però duramente sconfitta dagli Inglesi in una tempesta al largo delle coste britanniche.</p>
+                
+                <p><strong>Eredità:</strong> Alla sua morte la Spagna è ancora potente ma ha iniziato il suo declino. Le guerre continue hanno prosciugato le casse dello Stato e l'economia inizia a risentirne.</p>`
+            },
+            char3: {
+                title: "Elisabetta I d'Inghilterra (1533-1603)",
+                text: `<p><strong>L'età d'oro inglese:</strong> Elisabetta I regna dal 1558 al 1603, un periodo considerato l'età d'oro dell'Inghilterra. Il Paese conosce prosperità economica, espansione coloniale e splendore culturale.</p>
+                
+                <p><strong>La regina vergine:</strong> Non si sposa mai, preferendo governare da sola. È un'abile diplomatica che sa destreggiarsi tra le potenze europee. Mantiene la pace interna nonostante le tensioni religiose.</p>
+                
+                <p><strong>Tolleranza religiosa:</strong> Pur essendo a capo della Chiesa anglicana, è relativamente tollerante verso cattolici e puritani. Evita le persecuzioni religiose che devastano altri Paesi europei.</p>
+                
+                <p><strong>Espansione economica:</strong> Potenzia la flotta e il commercio. I mercanti inglesi aprono rotte verso Asia, Mediterraneo, America. Nel 1607 si fonda la prima colonia inglese in America: la Virginia.</p>
+                
+                <p><strong>Fioritura culturale:</strong> È l'epoca di William Shakespeare, Christopher Marlowe, Edmund Spenser. Il teatro elisabettiano raggiunge vette mai più eguagliate. Anche le scienze progrediscono con Francis Bacon.</p>
+                
+                <p><strong>Victoria contro la Spagna:</strong> Nel 1588 la flotta inglese sconfigge l'Invincibile Armada spagnola, stabilendo la supremazia navale britannica che durerà secoli.</p>`
+            },
+            char4: {
+                title: "Enrico IV di Francia (1553-1610)",
+                text: `<p><strong>Dalle guerre alla pace:</strong> Enrico di Borbone sale al trono nel 1589 dopo decenni di sanguinose guerre di religione tra cattolici e protestanti ugonotti. La Francia è devastata e divisa.</p>
+                
+                <p><strong>La conversione strategica:</strong> Pur essendo protestante, capisce che per unificare il Paese deve convertirsi al cattolicesimo. La frase "Parigi val bene una messa" riassume il suo pragmatismo politico. Nel 1593 si converte.</p>
+                
+                <p><strong>L'Editto di Nantes (1598):</strong> Emana questo editto rivoluzionario che garantisce ai calvinisti francesi: libertà di culto, uguaglianza politica, diritto di possedere piazzeforti militari. È un atto di tolleranza religiosa straordinario per l'epoca.</p>
+                
+                <p><strong>La ricostruzione:</strong> Riporta ordine e prosperità in Francia. Riorganizza l'amministrazione, risana le finanze, promuove l'agricoltura e il commercio. Il suo motto è "una gallina nel piatto ogni domenica" per ogni francese.</p>
+                
+                <p><strong>La morte:</strong> Nel 1610 viene assassinato da un fanatico cattolico, François Ravaillac, che non gli perdona la tolleranza verso i protestanti. La sua morte è una tragedia per la Francia che perde un grande re pacificatore.</p>`
+            },
+            char5: {
+                title: "Solimano il Magnifico (1494-1566)",
+                text: `<p><strong>L'apice dell'Impero Ottomano:</strong> Solimano I, decimo sultano ottomano, regna dal 1520 al 1566 e porta l'impero alla sua massima espansione territoriale. È considerato il più grande sultano della dinastia ottomana.</p>
+                
+                <p><strong>Le conquiste:</strong> Espande l'impero in tre direzioni: verso l'Europa (Ungheria, Balcani), verso l'Asia (Mesopotamia, Caucaso) e nel Mediterraneo (Nord Africa, isole greche). Nel 1529 arriva con il suo esercito fino alle porte di Vienna.</p>
+                
+                <p><strong>Il Legislatore:</strong> In Oriente è chiamato "il Legislatore" per la sua opera di riforma amministrativa e giuridica. Codifica le leggi, riorganizza l'amministrazione, promuove le arti e l'architettura.</p>
+                
+                <p><strong>Tolleranza religiosa:</strong> Gli Ottomani sono relativamente tolleranti verso cristiani ed ebrei nei loro territori. Le minoranze religiose pagano una tassa speciale ma possono mantenere la loro fede e le loro istituzioni.</p>
+                
+                <p><strong>La minaccia per l'Europa:</strong> Per l'Europa cristiana Solimano rappresenta la principale minaccia esterna. Le sue conquiste nei Balcani portano l'Islam alle porte dell'Occidente. Solo la morte (1566) ferma i suoi progetti di ulteriore espansione.</p>
+                
+                <p><strong>Eredità:</strong> Sotto il suo regno Costantinopoli diventa una delle città più belle e ricche del mondo. L'Impero Ottomano è una superpotenza che fa tremare l'Europa.</p>`
+            },
+            char6: {
+                title: "Ludovico Sforza 'il Moro' (1452-1508)",
+                text: `<p><strong>Il duca usurpatore:</strong> Ludovico Sforza, chiamato "il Moro" per la sua carnagione scura, diventa duca di Milano nel 1494 dopo aver usurpato il potere al nipote legittimo Gian Galeazzo Sforza.</p>
+                
+                <p><strong>La decisione fatale:</strong> Per rafforzare la sua posizione e cercare un alleato potente, nel 1494 invita Carlo VIII di Francia a scendere in Italia per conquistare il Regno di Napoli. È l'inizio delle Guerre d'Italia.</p>
+                
+                <p><strong>Mecenate e uomo del Rinascimento:</strong> Prima della sua caduta, Ludovico è un grande mecenate. Alla sua corte lavorano Leonardo da Vinci (che dipinge l'Ultima Cena nel refettorio di Santa Maria delle Grazie), Bramante e altri artisti.</p>
+                
+                <p><strong>La caduta:</strong> Nel 1499 il re di Francia Luigi XII, successore di Carlo VIII, decide di conquistare il Ducato di Milano rivendicando antichi diritti ereditari. Ludovico è costretto alla fuga.</p>
+                
+                <p><strong>La fine:</strong> Catturato dai Francesi nel 1500, viene portato prigioniero in Francia dove muore nel castello di Loches nel 1508. La sua decisione di chiamare gli stranieri in Italia è considerata dagli storici una delle cause principali della perdita dell'indipendenza italiana.</p>
+                
+                <p><strong>Il giudizio della storia:</strong> Machiavelli e altri contemporanei lo criticano duramente per aver aperto le porte d'Italia alle invasioni straniere, sacrificando l'indipendenza della penisola per i suoi interessi personali.</p>`
+            }
+        };
+
+        function openModal(id) {
+            const data = modalData[id];
+            if (data) {
+                document.getElementById('modalTitle').textContent = data.title;
+                document.getElementById('modalText').innerHTML = data.text;
+                document.getElementById('modal').classList.add('active');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        // Chiudi il modal cliccando fuori dal contenuto
+        document.getElementById('modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Chiudi il modal con il tasto ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
