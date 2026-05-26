@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Rivoluzione francese e Napoleone</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1f2733;
+    --paper:#f7f4ec;
+    --card:#ffffff;
+    --riv:#9c2b2b;       /* rosso rivoluzione */
+    --riv-soft:#f4e4e1;
+    --nap:#1f5673;       /* blu napoleone */
+    --nap-soft:#dfeaf0;
+    --gold:#b58b34;
+    --line:#e3ddd0;
+    --muted:#6f6a60;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Source Sans 3',sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.6;
+    padding-bottom:60px;
+  }
+  /* ---------- header ---------- */
+  header{
+    background:linear-gradient(135deg,#9c2b2b 0%,#7a2222 45%,#1f5673 100%);
+    color:#fff;
+    padding:48px 24px 40px;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+  }
+  header::after{
+    content:"";position:absolute;inset:0;
+    background:repeating-linear-gradient(45deg,transparent,transparent 18px,rgba(255,255,255,.03) 18px,rgba(255,255,255,.03) 36px);
+  }
+  header h1{
+    font-family:'Fraunces',serif;font-weight:700;
+    font-size:clamp(1.8rem,5vw,3rem);
+    letter-spacing:.5px;position:relative;
+  }
+  header p{margin-top:8px;font-size:1.05rem;opacity:.92;position:relative}
+  /* ---------- nav ---------- */
+  nav{
+    position:sticky;top:0;z-index:50;
+    background:rgba(247,244,236,.95);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+    display:flex;flex-wrap:wrap;justify-content:center;gap:6px;
+    padding:10px;
+  }
+  nav button{
+    font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:.95rem;
+    border:1px solid var(--line);background:#fff;color:var(--ink);
+    padding:9px 16px;border-radius:999px;cursor:pointer;transition:all .18s;
+  }
+  nav button:hover{border-color:var(--nap)}
+  nav button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  /* ---------- layout ---------- */
+  main{max-width:920px;margin:0 auto;padding:34px 22px}
+  .panel{display:none;animation:fade .4s ease}
+  .panel.show{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  h2.section-title{
+    font-family:'Fraunces',serif;font-size:1.9rem;font-weight:600;
+    margin-bottom:6px;
+  }
+  .section-intro{color:var(--muted);margin-bottom:26px;font-size:1.02rem}
+
+  /* ---------- mappa ---------- */
+  .map-block{margin-bottom:30px;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--card)}
+  .map-head{padding:14px 20px;font-family:'Fraunces',serif;font-weight:600;font-size:1.25rem;color:#fff}
+  .map-head.riv{background:var(--riv)}
+  .map-head.nap{background:var(--nap)}
+  .map-body{padding:18px 20px}
+  .node{
+    border-left:3px solid var(--gold);
+    padding:6px 0 6px 16px;margin:14px 0;
+  }
+  .node strong{display:block;font-size:1.05rem;color:var(--ink)}
+  .node span{color:var(--muted);font-size:.96rem}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+  .chip{
+    background:var(--nap-soft);color:var(--nap);font-weight:600;
+    font-size:.82rem;padding:4px 11px;border-radius:8px;
+  }
+  .map-head.riv ~ .map-body .chip{background:var(--riv-soft);color:var(--riv)}
+  .map-head.riv ~ .map-body .node{border-left-color:var(--riv)}
+  .map-head.nap ~ .map-body .node{border-left-color:var(--nap)}
+
+  /* ---------- timeline ---------- */
+  .tl{position:relative;margin-left:8px;padding-left:30px}
+  .tl::before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:3px;
+    background:linear-gradient(var(--riv),var(--gold),var(--nap))}
+  .tl-item{position:relative;margin-bottom:24px}
+  .tl-item::before{
+    content:"";position:absolute;left:-29px;top:4px;width:15px;height:15px;
+    border-radius:50%;background:#fff;border:3px solid var(--gold);
+  }
+  .tl-item.r::before{border-color:var(--riv)}
+  .tl-item.n::before{border-color:var(--nap)}
+  .tl-date{font-family:'Fraunces',serif;font-weight:700;font-size:1.1rem}
+  .tl-item.r .tl-date{color:var(--riv)}
+  .tl-item.n .tl-date{color:var(--nap)}
+  .tl-text{font-size:.98rem;margin-top:2px}
+
+  /* ---------- spiegazioni ---------- */
+  details.spieg{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    margin-bottom:12px;overflow:hidden;
+  }
+  details.spieg summary{
+    cursor:pointer;padding:15px 20px;font-weight:600;font-size:1.08rem;
+    list-style:none;display:flex;align-items:center;gap:10px;
+  }
+  details.spieg summary::-webkit-details-marker{display:none}
+  details.spieg summary::before{
+    content:"+";font-family:'Fraunces',serif;font-size:1.5rem;color:var(--gold);
+    transition:transform .2s;line-height:1;
+  }
+  details.spieg[open] summary::before{content:"–"}
+  details.spieg .content{padding:0 20px 18px;color:#333}
+  details.spieg .content p{margin-bottom:10px}
+  .tag{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
+    padding:3px 8px;border-radius:6px;margin-left:auto}
+  .tag.riv{background:var(--riv-soft);color:var(--riv)}
+  .tag.nap{background:var(--nap-soft);color:var(--nap)}
+  .keyword{background:#fbf3df;padding:1px 4px;border-radius:4px;font-weight:600}
+
+  /* ---------- test ---------- */
+  .quiz-item{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:18px 20px;margin-bottom:16px}
+  .quiz-q{font-weight:600;font-size:1.05rem;margin-bottom:12px}
+  .quiz-q .num{color:var(--gold);font-family:'Fraunces',serif;margin-right:6px}
+  .opt{display:block;width:100%;text-align:left;background:#fff;border:1.5px solid var(--line);
+    border-radius:9px;padding:11px 14px;margin-bottom:8px;cursor:pointer;font-size:.98rem;
+    font-family:inherit;transition:all .15s}
+  .opt:hover{border-color:var(--nap)}
+  .opt.correct{background:#e3f3e6;border-color:#3f9b54;color:#1d5e2c;font-weight:600}
+  .opt.wrong{background:#fbe6e4;border-color:#c0443b;color:#8a2b24}
+  .opt:disabled{cursor:default}
+  .feedback{font-size:.92rem;margin-top:6px;font-weight:600;min-height:1.2em}
+  .score-box{position:sticky;bottom:14px;margin-top:24px;background:var(--ink);color:#fff;
+    border-radius:12px;padding:16px 22px;display:flex;justify-content:space-between;
+    align-items:center;box-shadow:0 8px 26px rgba(0,0,0,.18)}
+  .score-box strong{font-family:'Fraunces',serif;font-size:1.4rem}
+  .reset{background:var(--gold);color:#fff;border:none;padding:9px 18px;border-radius:8px;
+    font-weight:600;cursor:pointer;font-family:inherit}
+  footer{text-align:center;color:var(--muted);font-size:.85rem;margin-top:40px;padding:0 20px}
+</style>
+</head>
+<body>
+<header>
+  <h1>La Rivoluzione francese e Napoleone</h1>
+  <p>Mappa · Linea del tempo · Spiegazioni · Test</p>
+</header>
+
+<nav>
+  <button class="active" data-t="mappa">🗺️ Mappa</button>
+  <button data-t="tempo">📜 Linea del tempo</button>
+  <button data-t="spieg">📖 Spiegazioni</button>
+  <button data-t="test">✏️ Test</button>
+</nav>
+
+<main>
+  <!-- ============ MAPPA ============ -->
+  <section class="panel show" id="mappa">
+    <h2 class="section-title">Mappa delle conoscenze</h2>
+    <p class="section-intro">I concetti chiave organizzati per fasi. Segui le tappe dall'alto verso il basso.</p>
+
+    <div class="map-block">
+      <div class="map-head riv">La Rivoluzione francese (1789–1799)</div>
+      <div class="map-body">
+        <div class="node"><strong>Le cause</strong><span>Società divisa in tre stati; clero e nobili non pagano le tasse; il Terzo stato (98%) è il più colpito. Grave crisi finanziaria e debito pubblico.</span>
+          <div class="chips"><span class="chip">tre stati</span><span class="chip">privilegi</span><span class="chip">debito pubblico</span></div></div>
+        <div class="node"><strong>Lo scoppio (1789)</strong><span>Luigi XVI convoca gli Stati generali. Il Terzo stato chiede il voto per testa, si proclama Assemblea nazionale e fa il Giuramento della Pallacorda.</span>
+          <div class="chips"><span class="chip">Stati generali</span><span class="chip">voto per testa</span><span class="chip">Pallacorda</span></div></div>
+        <div class="node"><strong>Dalla monarchia alla repubblica</strong><span>Marcia delle donne su Versailles; Costituzione civile del clero; fuga a Varennes; monarchia costituzionale (1791); repubblica (1792) dopo Valmy.</span>
+          <div class="chips"><span class="chip">Varennes</span><span class="chip">Costituzione 1791</span><span class="chip">Valmy</span></div></div>
+        <div class="node"><strong>Il Terrore (1793–1794)</strong><span>Condanna a morte del re; coalizione antifrancese; Comitato di salute pubblica; Robespierre. Fine del Terrore e nuova Costituzione (1795) con il Direttorio.</span>
+          <div class="chips"><span class="chip">ghigliottina</span><span class="chip">Robespierre</span><span class="chip">Direttorio</span></div></div>
+      </div>
+    </div>
+
+    <div class="map-block">
+      <div class="map-head nap">L'Europa di Napoleone (1796–1821)</div>
+      <div class="map-body">
+        <div class="node"><strong>L'ascesa</strong><span>Campagna d'Italia; trattato di Campoformio; nascita delle "Repubbliche sorelle"; spedizione in Egitto e sconfitta ad Abukir.</span>
+          <div class="chips"><span class="chip">Campoformio</span><span class="chip">Repubbliche sorelle</span><span class="chip">Egitto</span></div></div>
+        <div class="node"><strong>Da console a imperatore</strong><span>Colpo di Stato (1799) e Consolato; vittoria di Marengo; regime assoluto; imperatore nel 1804. Concordato e Codice civile.</span>
+          <div class="chips"><span class="chip">Consolato</span><span class="chip">Codice civile</span><span class="chip">imperatore 1804</span></div></div>
+        <div class="node"><strong>Il dominio sull'Europa</strong><span>Sconfitta a Trafalgar ma vittoria ad Austerlitz; parenti sui troni europei; blocco continentale contro la Gran Bretagna.</span>
+          <div class="chips"><span class="chip">Trafalgar</span><span class="chip">Austerlitz</span><span class="chip">blocco continentale</span></div></div>
+        <div class="node"><strong>La caduta</strong><span>Disastrosa campagna di Russia (1812); sconfitta a Lipsia (1813); abdicazione ed esilio all'Elba; i "cento giorni"; Waterloo (1815) e Sant'Elena.</span>
+          <div class="chips"><span class="chip">Russia 1812</span><span class="chip">Lipsia</span><span class="chip">Waterloo</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TIMELINE ============ -->
+  <section class="panel" id="tempo">
+    <h2 class="section-title">Linea del tempo</h2>
+    <p class="section-intro">In <span style="color:var(--riv);font-weight:700">rosso</span> la Rivoluzione, in <span style="color:var(--nap);font-weight:700">blu</span> l'età di Napoleone.</p>
+    <div class="tl" id="tl"></div>
+  </section>
+
+  <!-- ============ SPIEGAZIONI ============ -->
+  <section class="panel" id="spieg">
+    <h2 class="section-title">Spiegazioni</h2>
+    <p class="section-intro">Tocca ogni voce per aprire la spiegazione. I termini evidenziati sono le parole da ricordare.</p>
+    <div id="spiegBox"></div>
+  </section>
+
+  <!-- ============ TEST ============ -->
+  <section class="panel" id="test">
+    <h2 class="section-title">Piccolo test</h2>
+    <p class="section-intro">10 domande a scelta multipla. Clicca una risposta: si correggono da sole.</p>
+    <div id="quizBox"></div>
+    <div class="score-box">
+      <span>Punteggio: <strong id="score">0</strong> / 10</span>
+      <button class="reset" onclick="resetQuiz()">Ricomincia</button>
+    </div>
+  </section>
+</main>
+
+<footer>Materiale didattico per la scuola secondaria di primo grado · contenuti tratti dal testo di studio.</footer>
+
+<script>
+/* ---------- navigazione ---------- */
+const btns=document.querySelectorAll('nav button');
+btns.forEach(b=>b.addEventListener('click',()=>{
+  btns.forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('show'));
+  document.getElementById(b.dataset.t).classList.add('show');
+  window.scrollTo({top:0,behavior:'smooth'});
+}));
+
+/* ---------- dati timeline ---------- */
+const timeline=[
+  ['r','1774','Luigi XVI sale al trono.'],
+  ['r','5 maggio 1789','Si riuniscono gli Stati generali a Versailles.'],
+  ['r','17–20 giugno 1789','Nasce l\'Assemblea nazionale; Giuramento della Pallacorda.'],
+  ['r','5 ottobre 1789','Le donne marciano su Versailles per il prezzo del pane.'],
+  ['r','novembre 1789','Confiscate le proprietà della Chiesa; Costituzione civile del clero.'],
+  ['r','20 giugno 1791','Fuga del re, fermato a Varennes.'],
+  ['r','3 settembre 1791','Costituzione: la Francia è monarchia costituzionale.'],
+  ['r','20 aprile 1792','La Francia dichiara guerra all\'Austria.'],
+  ['r','20–21 settembre 1792','Vittoria di Valmy; è proclamata la repubblica.'],
+  ['r','1793','Condanna a morte del re; il Comitato di salute pubblica avvia il Terrore.'],
+  ['r','27 luglio 1794','Fine del Terrore: arresto di Robespierre.'],
+  ['r','1795','Nuova Costituzione: nasce il Direttorio.'],
+  ['n','1796–1797','Prima campagna d\'Italia; trattato di Campoformio; Repubbliche sorelle.'],
+  ['n','1798','Spedizione in Egitto; vittoria delle piramidi, sconfitta ad Abukir.'],
+  ['n','9 novembre 1799','Colpo di Stato: Napoleone primo console.'],
+  ['n','14 giugno 1800','Vittoria di Marengo sull\'Austria.'],
+  ['n','1801','Concordato con la Chiesa.'],
+  ['n','18 maggio 1804','Napoleone imperatore dei Francesi; Codice civile.'],
+  ['n','1805','Sconfitta a Trafalgar; vittoria ad Austerlitz (2 dicembre).'],
+  ['n','giugno 1812','Inizia la disastrosa campagna di Russia.'],
+  ['n','ottobre 1813','Sconfitta a Lipsia.'],
+  ['n','1814','Abdicazione ed esilio all\'isola d\'Elba.'],
+  ['n','18 giugno 1815','Sconfitta definitiva a Waterloo; esilio a Sant\'Elena.'],
+  ['n','5 maggio 1821','Morte di Napoleone a Sant\'Elena.'],
+];
+document.getElementById('tl').innerHTML=timeline.map(([c,d,t])=>
+  `<div class="tl-item ${c}"><div class="tl-date">${d}</div><div class="tl-text">${t}</div></div>`).join('');
+
+/* ---------- dati spiegazioni ---------- */
+const spiegazioni=[
+  ['riv','Perché scoppia la Rivoluzione?',
+   'La società francese era divisa in tre <span class="keyword">stati</span>: clero, nobili e Terzo stato. I primi due godevano di privilegi, soprattutto quello di <span class="keyword">non pagare le tasse</span>, che ricadevano quasi tutte sul Terzo stato (il 98% della popolazione). La Francia aveva inoltre un enorme <span class="keyword">debito pubblico</span> e le tasse non bastavano a ripagarlo. Quando il re cercò di far pagare anche nobili e clero, questi si opposero: per trovare una soluzione fu costretto a convocare gli Stati generali.'],
+  ['riv','Gli Stati generali e la Pallacorda',
+   'Convocati nel 1789, gli <span class="keyword">Stati generali</span> erano l\'assemblea dei tre ordini. Sorse subito un conflitto sul voto: il Terzo stato chiese il voto <span class="keyword">per testa</span> (un voto a rappresentante) invece che per ordine. Di fronte al rifiuto, il 17 giugno i deputati si proclamarono <span class="keyword">Assemblea nazionale</span> e, nella sala della <span class="keyword">Pallacorda</span>, giurarono di non sciogliersi prima di dare al Paese una Costituzione.'],
+  ['riv','Dalla monarchia alla repubblica',
+   'L\'Assemblea approvò nuove leggi e, dopo la marcia delle donne su Versailles, il re dovette cedere. Furono confiscate le proprietà della Chiesa (<span class="keyword">Costituzione civile del clero</span>). Dopo la fuga fermata a <span class="keyword">Varennes</span>, nel 1791 nacque una <span class="keyword">monarchia costituzionale</span>. Con la guerra all\'Austria e la vittoria di <span class="keyword">Valmy</span>, il 21 settembre 1792 fu proclamata la repubblica.'],
+  ['riv','Il Terrore',
+   'Il re fu condannato a morte con la <span class="keyword">ghigliottina</span>. Tra le potenze europee si formò una <span class="keyword">coalizione antifrancese</span>. Il <span class="keyword">Comitato di salute pubblica</span>, con Robespierre, assunse pieni poteri: dall\'agosto 1793 al luglio 1794 vi furono migliaia di esecuzioni. Il Terrore finì con l\'arresto di Robespierre; nel 1795 una nuova Costituzione istituì il <span class="keyword">Direttorio</span>.'],
+  ['nap','Lezione 1 · L\'ascesa di Napoleone',
+   '<p>Nel 1795 la Francia firmò la <span class="keyword">pace</span> con Spagna e Prussia, ma continuava la guerra contro Gran Bretagna e Austria. Il comando fu affidato al giovane generale <span class="keyword">Napoleone Bonaparte</span>, che nel 1796 attaccò l\'Italia settentrionale: in meno di un mese arrivò a Milano, poi invase i Ducati di Parma e Reggio Emilia. Nel 1797 si arrese anche la Repubblica di Venezia.</p>'+
+   '<p>Il <span class="keyword">trattato di Campoformio</span> (1797) sancì il passaggio alla Francia di Lombardia e Belgio, mentre Venezia andò all\'Austria.</p>'+
+   '<p>Sui territori conquistati la Francia creò le <span class="keyword">"Repubbliche sorelle"</span>: la Repubblica elvetica e quella olandese, e in Italia il Piemonte annesso alla Francia, la Repubblica cispadana (poi cisalpina), la Repubblica ligure, la Repubblica romana (1798, con il papa esiliato) e la Repubblica partenopea (1799). Queste repubbliche <span class="keyword">illusero</span> i patrioti italiani con gli ideali di uguaglianza e libertà, ma in realtà la Francia si comportò da <span class="keyword">Paese dominatore</span>.</p>'+
+   '<p>Per colpire l\'Inghilterra il Direttorio mandò Napoleone in <span class="keyword">Egitto</span> (1798): vinse la battaglia delle piramidi, ma la flotta inglese distrusse quella francese ad <span class="keyword">Abukir</span>, bloccandone il rientro. Intanto si formò una <span class="keyword">seconda alleanza antifrancese</span> e le Repubbliche sorelle caddero.</p>'],
+  ['nap','Lezione 2 · Da console a imperatore',
+   '<p>Rientrato in patria dopo aver abbandonato le truppe in Egitto, Napoleone attuò il <span class="keyword">colpo di Stato</span> del 9 novembre 1799: tolse il potere al Direttorio e impose il <span class="keyword">Consolato</span>, un governo di tre persone in cui lui era <span class="keyword">primo console</span>. Riprese poi la guerra contro l\'Austria, battuta a <span class="keyword">Marengo</span> il 14 giugno 1800.</p>'+
+   '<p>Con Marengo la Francia riconquistò Piemonte e Lombardia; nel 1802 nacque la <span class="keyword">Repubblica italiana</span>, di cui Napoleone era presidente. In Francia costruì un <span class="keyword">regime assoluto</span>: soppresse la libertà di stampa, nominò prefetti al posto delle amministrazioni elette e reintrodusse la schiavitù nelle colonie. Nel 1802, con un <span class="keyword">plebiscito</span>, divenne console a vita; il 18 maggio 1804 si proclamò <span class="keyword">imperatore dei Francesi</span>, togliendosi la corona dalle mani del papa e mettendosela da solo, per mostrare che la sua autorità dipendeva solo da sé.</p>'+
+   '<p>Tra i suoi <span class="keyword">provvedimenti</span>: tasse doganali altissime per proteggere le merci francesi, il riordino del sistema fiscale e la fondazione della <span class="keyword">Banca di Francia</span>. Nel 1801 firmò il <span class="keyword">concordato</span> con la Chiesa (cattolicesimo religione dei Francesi, ma vescovi nominati dallo Stato). Nel 1804 pubblicò il <span class="keyword">Codice civile</span>, prima legge uguale per tutti i cittadini, che garantiva l\'uguaglianza davanti alla legge, la proprietà privata e la libertà economica.</p>'],
+  ['nap','Lezione 3 · Napoleone conquista l\'Europa',
+   '<p>Nel 1805 una <span class="keyword">nuova alleanza antifrancese</span> diede inizio a una lunga serie di guerre. Napoleone voleva invadere la Gran Bretagna, ma la sua flotta fu sconfitta a <span class="keyword">Trafalgar</span>, confermando la supremazia britannica sui mari. Sulla terraferma invece vinse: il 2 dicembre 1805 ad <span class="keyword">Austerlitz</span> batté Russia e Austria, imponendo la superiorità francese in Europa.</p>'+
+   '<p>Padrone di oltre mezza Europa, Napoleone mise i <span class="keyword">parenti</span> sui troni: il fratello Luigi re d\'Olanda, il fratello Giuseppe re di Napoli (poi di Spagna), la sorella Elisa regina d\'Etruria, Eugenio de Beauharnais a capo del Regno d\'Italia, e Gioacchino Murat re di Napoli. Nel 1809 anche lo Stato della Chiesa fu annesso all\'Impero.</p>'+
+   '<p>Napoleone <span class="keyword">accentrò il potere</span>: tutti i funzionari erano nominati dal governo e fu imposto un <span class="keyword">"catechismo imperiale"</span> per promuovere la venerazione del sovrano. Ma tra il 1810 e il 1812 una <span class="keyword">grave crisi economica</span> aumentò disoccupazione e malcontento, aggravati da tasse e leve militari.</p>'+
+   '<p>Per piegare la Gran Bretagna attuò il <span class="keyword">blocco continentale</span>, vietando agli Stati controllati dalla Francia di commerciare con l\'Inghilterra. La strategia fu inefficace: gli Inglesi commerciarono con le colonie, mentre l\'Europa rimase senza materie prime.</p>'],
+  ['nap','Lezione 4 · La caduta di Napoleone',
+   '<p>Poiché il blocco danneggiava l\'economia russa, lo <span class="keyword">zar Alessandro I</span> smise di rispettarlo. Nel giugno 1812 Napoleone invase la <span class="keyword">Russia</span>: i Russi si ritirarono bruciando tutto (campi, case, viveri). Il 14 settembre 1812 entrò a <span class="keyword">Mosca</span>, città deserta e incendiata. Senza rifornimenti e con l\'inverno in arrivo, ordinò la <span class="keyword">ritirata</span>: sulla <span class="keyword">Beresina</span> l\'esercito francese subì una disastrosa sconfitta.</p>'+
+   '<p>In Spagna intanto scoppiò la rivolta contro Giuseppe Bonaparte e nel 1813 gli Spagnoli, con la Gran Bretagna, cacciarono i Francesi. I nemici di Napoleone si riallearono: nell\'ottobre 1813 fu sconfitto a <span class="keyword">Lipsia</span>.</p>'+
+   '<p>Nella primavera del 1814 cadde Parigi. Napoleone fu costretto ad <span class="keyword">abdicare</span> e fu incoronato re Luigi XVIII; Bonaparte fu esiliato all\'<span class="keyword">isola d\'Elba</span>. Riuscì a fuggire e a riprendere il potere per soli tre mesi (i <span class="keyword">"cento giorni"</span>), ma il 18 giugno 1815 fu sconfitto definitivamente a <span class="keyword">Waterloo</span>. Esiliato a <span class="keyword">Sant\'Elena</span>, vi morì il 5 maggio 1821.</p>'],
+];
+document.getElementById('spiegBox').innerHTML=spiegazioni.map(([c,t,b])=>{
+  const body = b.trim().startsWith('<p') ? b : '<p>'+b+'</p>';
+  return `<details class="spieg"><summary>${t}<span class="tag ${c}">${c==='riv'?'Rivoluzione':'Napoleone'}</span></summary><div class="content">${body}</div></details>`;
+}).join('');
+
+/* ---------- dati quiz ---------- */
+const quiz=[
+  ['Quale stato comprendeva il 98% della popolazione francese?',
+    ['Il clero','Il Terzo stato','La nobiltà'],1,'Il Terzo stato: borghesi, artigiani, commercianti e contadini.'],
+  ['Cosa giurarono i deputati nella sala della Pallacorda?',
+    ['Di abolire la monarchia','Di non pagare più le tasse','Di non sciogliersi prima di una Costituzione'],2,'Giurarono di restare uniti fino a dare al Paese una Costituzione.'],
+  ['Dove fu fermato Luigi XVI durante la fuga?',
+    ['A Varennes','A Versailles','A Valmy'],0,'Fu riconosciuto a Varennes, al confine con il Belgio.'],
+  ['In che data fu proclamata la repubblica?',
+    ['14 luglio 1789','21 settembre 1792','9 novembre 1799'],1,'Il 21 settembre 1792, dopo la vittoria di Valmy.'],
+  ['Chi guidò il Comitato di salute pubblica durante il Terrore?',
+    ['Napoleone','Necker','Robespierre'],2,'Robespierre fu il principale protagonista del Terrore.'],
+  ['Quale trattato sancì il passaggio di Lombardia e Belgio alla Francia?',
+    ['Trattato di Campoformio','Pace di Marengo','Concordato'],0,'Il trattato di Campoformio (1797).'],
+  ['Quando Napoleone si proclamò imperatore?',
+    ['Nel 1799','Nel 1804','Nel 1812'],1,'Il 18 maggio 1804, imperatore dei Francesi.'],
+  ['Dove fu sconfitta la flotta francese nel 1805?',
+    ['Ad Austerlitz','A Waterloo','A Trafalgar'],2,'A Trafalgar; sulla terraferma vinse invece ad Austerlitz.'],
+  ['Cosa fu il blocco continentale?',
+    ['Il divieto di commerciare con l\'Inghilterra','Un\'alleanza militare','Una nuova tassa sui nobili'],0,'Vietava agli Stati controllati dalla Francia il commercio con l\'Inghilterra.'],
+  ['Dove fu sconfitto definitivamente Napoleone nel 1815?',
+    ['A Lipsia','A Waterloo','In Russia'],1,'A Waterloo, il 18 giugno 1815; poi l\'esilio a Sant\'Elena.'],
+];
+let score=0, answered=0;
+function renderQuiz(){
+  score=0;answered=0;document.getElementById('score').textContent=0;
+  document.getElementById('quizBox').innerHTML=quiz.map((q,i)=>{
+    const opts=q[1].map((o,j)=>`<button class="opt" onclick="answer(${i},${j})" data-q="${i}" data-o="${j}">${o}</button>`).join('');
+    return `<div class="quiz-item"><div class="quiz-q"><span class="num">${i+1}.</span>${q[0]}</div>${opts}<div class="feedback" id="fb${i}"></div></div>`;
+  }).join('');
+}
+function answer(qi,oi){
+  const correct=quiz[qi][2];
+  const btns=document.querySelectorAll(`.opt[data-q="${qi}"]`);
+  if(btns[0].disabled) return;
+  btns.forEach(b=>b.disabled=true);
+  const fb=document.getElementById('fb'+qi);
+  if(oi===correct){
+    btns[oi].classList.add('correct');
+    fb.style.color='#1d5e2c';fb.textContent='✓ Esatto! '+quiz[qi][3];
+    score++;
+  }else{
+    btns[oi].classList.add('wrong');
+    btns[correct].classList.add('correct');
+    fb.style.color='#8a2b24';fb.textContent='✗ '+quiz[qi][3];
+  }
+  document.getElementById('score').textContent=score;
+}
+function resetQuiz(){renderQuiz();window.scrollTo({top:document.getElementById('test').offsetTop-60,behavior:'smooth'});}
+renderQuiz();
+</script>
+</body>
+</html>
